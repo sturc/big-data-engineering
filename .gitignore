@@ -1,2 +1,8 @@
 big-data-engineering.code-workspace
 venv
+sudoku
+sudoku_data
+data/churn.csv
+sudoku-20230720T123157-3.svg
+sudoku-20230720T123959-5.svg
+.gitignore

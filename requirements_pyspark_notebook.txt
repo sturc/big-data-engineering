@@ -2,7 +2,7 @@ pywebhdfs==0.4.1
 hdfs==2.7.3
 jedi==0.18.2
 numpy==1.24.3
-pyarrow==12.0.1
+pyarrow==14.0.1
 pandas==2.0.3
 python-dateutil==2.8.2
 pytz==2023.3

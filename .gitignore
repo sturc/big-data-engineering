@@ -7,8 +7,12 @@ sudoku-20230720T123959-5.svg
 .gitignore
 .ipynb_checkpoints
 helpers/__pycache__
-solutions
 data/churn.csv
 data/HRDataset_v14.csv
 data/sales.csv
-
+data/telco_etl_challenge/
+solutions/telecom_etl_challenge_solution.ipynb
+exercises/telecom_etl_challenge.ipynb
+solutions/data_streaming.ipynb
+solutions/streaming_server.py
+data/minions-ipsum.txt

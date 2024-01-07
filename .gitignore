@@ -16,3 +16,5 @@ exercises/telecom_etl_challenge.ipynb
 solutions/data_streaming.ipynb
 solutions/streaming_server.py
 data/minions-ipsum.txt
+data/telecom_customers_for_cleaning.csv
+prototypes

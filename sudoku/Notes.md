@@ -8,10 +8,9 @@ The Sudoku data example can be used for several tasks
 - Test if there is a single solution of the Sudoku puzzle = ``sudoku_single_solution_exists.ipynb``
 - Remodel the data => make single columns out of the Array = ``sudoku_as_array.ipynb``
 - Calc the difficulty mode of the sample = = ``sudoku_single_solution_exists.ipynb``
-- Label the puzzles as valid (solveable and one unique solution exists) or invalid
+- Generate new Sudokus with SudokuSolver & SudokuGenerator ``sudoku_generator.ipynb`` and ``sudoku_generator.py``
+- Label the puzzles as valid (solveable and one unique solution exists) or invalid (TODO continue)
 - Create a deep Learing Model to solve the puzzle <https://www.kaggle.com/code/yashchoudhary/deep-sudoku-solver-multiple-approaches/notebook>
-- sequence the data (every number should get a single column)
-
 
 ## Create a Deep Neural Network
 

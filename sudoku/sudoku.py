@@ -71,12 +71,14 @@ class Sudoku:
         svg += '</svg>'
         return svg
 
-    def generate(self, difficulty:str)->tuple[np.ndarray,np.ndarray,str, int]:
+    def generate(self, difficulty:str, max_num_sol:int=1)->tuple[np.ndarray,np.ndarray,str, int]:
         """
-        Generates a Sudoku board with the specified difficulty level.
+        Generates a Sudoku board with the specified difficulty level. 
+        Only Sudokus with the given number of solutions are returned
 
         Args:
-            difficulty (str): The difficulty level of the Sudoku board.
+            difficulty (str): The difficulty level of the Sudoku board
+            num_sol (int): The number of solutions of the Sudoku board
 
         Returns:
             tuple: Consisting of the quiz, a solution, the difficulty level and the number of pos. solutions
@@ -91,17 +93,15 @@ class Sudoku:
         # empty cells 
         empty_success = False
         while not empty_success :
-            empty_success = self.empty_cells_from_board(difficulty)
+            empty_success = self.empty_cells_from_board(difficulty, max_num_sol)
         
         # checking how many solutions are in the board
         num_solutions = len(list(self.solve()))
         return self.board, solution, difficulty,num_solutions
 
 
-
-
     def fill_with_random_numbers(self)->None: 
-     # fill diagonal squares
+        # fill diagonal squares
         for i in range(0, 9, 3):
             square = [1, 2, 3, 4, 5, 6, 7, 8, 9]
             random.shuffle(square)
@@ -109,7 +109,7 @@ class Sudoku:
                 for c in range(3):
                     self.board[r + i][c + i] = square.pop()
 
-    def empty_cells_from_board(self, difficulty : str) -> bool:
+    def empty_cells_from_board(self, difficulty : str, num_sol:int) -> bool:
         # difficulty
         empty_cells = self.get_num_of_empty_cells_by_diff_level(difficulty)
         # creating a list of coordinates to visit and shuffling them
@@ -122,13 +122,10 @@ class Sudoku:
             r, c = unvisited.pop()
             backup_copy = self.board[r][c]
             self.board[r][c] = 0
-            if empty_cells > DIFFICULTY_LEVELS.get("Easy") :
-             # checking how many solutions are in the board             
-                solutions = list(self.solve())
-                if len(solutions) > 1:
-                    self.board[r][c] = backup_copy
-                else :
-                    empty_cells -= 1
+            # checking how many solutions are in the board             
+            solutions = list(self.solve())
+            if len(solutions) > num_sol:
+                self.board[r][c] = backup_copy
             else :
                 empty_cells -= 1
         # if unvisited is empty, but empty_cells not -> trying again
@@ -166,8 +163,8 @@ class Sudoku:
         if empty_cells == 0: 
             return "Solved"
         for diff_level, value in DIFFICULTY_LEVELS.items():
-             if value <= empty_cells:
-                 return diff_level
+                if value <= empty_cells:
+                    return diff_level
         return "Diabolical"
 
     def print(self):

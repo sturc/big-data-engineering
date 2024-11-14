@@ -13,7 +13,7 @@ backcall==0.2.0
 beautifulsoup4==4.12.2
 bleach==6.0.0
 cachetools==5.3.1
-certifi==2023.11.17
+certifi==2024.7.4
 cffi==1.15.1
 charset-normalizer==3.2.0
 comm==0.1.3

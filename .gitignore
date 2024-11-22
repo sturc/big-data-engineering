@@ -19,3 +19,5 @@ data/minions-ipsum.txt
 data/telecom_customers_for_cleaning.csv
 prototypes
 solutions
+data/ida_2016_training_set_update.csv
+data/ida_2016_training_set_update_with_mv.csv

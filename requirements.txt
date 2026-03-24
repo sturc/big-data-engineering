@@ -21,7 +21,7 @@ defusedxml==0.7.1
 docopt==0.6.2
 executing==2.1.0
 fastjsonschema==2.20.0
-fonttools==4.60.1
+fonttools==4.60.2
 fqdn==1.5.1
 googleapis-common-protos==1.56.4
 h11==0.16.0

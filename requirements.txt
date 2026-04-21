@@ -76,7 +76,7 @@ pure_eval==0.2.3
 py4j==0.10.9.7
 pyarrow==20.0.0
 pycparser==2.22
-Pygments==2.18.0
+Pygments==2.20.0
 pyparsing==3.2.0
 pyspark==3.5.7
 python-dateutil==2.9.0.post0

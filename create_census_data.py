@@ -12,7 +12,7 @@ SOURCE_URL = "data/census_2010.json"
 
 RAW_SCHEMA = T.StructType([
     T.StructField(name, T.LongType())
-    for name in ["year", "age", "females", "males", "total"]
+    for name in ["year", "age", "females", "males"]
 ] + [T.StructField("_corrupt_record", T.StringType())])
 
 
@@ -94,7 +94,6 @@ def next_year(previous, seed=42):
 
             row[sex] = max(0, round(value))
 
-        row["total"] = row["females"] + row["males"]
         result.append(row)
 
     return result
@@ -117,11 +116,9 @@ def prepare_data(folder):
     corrected = [dict(row) for row in base]
     row40 = next(row for row in corrected if row["age"] == 40)
     row40["females"] += 10_000
-    row40["total"] = row40["females"] + row40["males"]
     write_jsonl(folder / "census_2010_revision2.json", corrected)
 
     invalid = [dict(row) for row in next_year(base)]
-    invalid[10]["total"] += 1
     invalid[20]["females"] = None
     invalid.append(dict(invalid[30]))
     write_jsonl(folder / "census_2011_invalid.json", invalid)

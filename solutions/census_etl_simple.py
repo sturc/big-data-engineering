@@ -5,7 +5,7 @@ from pyspark.sql import SparkSession, functions as F, types as T
 
 RAW_SCHEMA = T.StructType([
     T.StructField(name, T.LongType())
-    for name in ["year", "age", "females", "males", "total"]
+    for name in ["year", "age", "females", "males"]
 ])
 
 # Age group definitions: (name, age_from, age_to)
@@ -17,35 +17,33 @@ AGE_GROUPS = [
 ]
 
 
-def load_simple(spark, source, warehouse, year, batch_id):
-    """
-    Simplified load function for census data with medallion architecture.
-    
-    Warehouse structure (standard medallion):
-    - bronze/: Raw data as received (JSONL)
-    - silver/: Cleaned, validated and as Parquet (versioned by batch_id)
-    - staging/: Temporary processing workspace
-    - quarantine/: Failed data on validation errors
-    
+
+def extract(source, warehouse, batch_id):
+    """Copy a JSONL source to Bronze without overwriting an existing batch."""
+    bronze_path = Path(warehouse) / "bronze" / f"{batch_id}.json"
+    if bronze_path.exists():
+        return "already_exists"
+
+    bronze_path.parent.mkdir(parents=True, exist_ok=True)
+    bronze_path.write_bytes(Path(source).read_bytes())
+    return "committed"
+
+
+def transfer(spark, warehouse, year, batch_id):
+    """Validate a Bronze batch and transfer it through staging to Silver.
+       Adds total, batch_id, version_at, and recorded_at columns to the Silver data.
     Args:
         spark: SparkSession
-        source: Path object to JSONL file
-        warehouse: Path object to warehouse directory (assumed to exist)
-        year: Year of data (converted to 12/31 for versioning)
-        batch_id: Unique batch identifier
-        
+        warehouse: Path to the warehouse directory
+        year: Census year (e.g., 2010)
+        batch_id: Batch identifier (e.g., "census_2010")
     Returns:
-        "committed" on success, "already_exists" if data already exists
+        "committed" on success, "already_exists" if already processed
     """
-    # Convert to Path objects if not already done
-    source = Path(source) if not isinstance(source, Path) else source
-    warehouse = Path(warehouse) if not isinstance(warehouse, Path) else warehouse
-    
-    # Convert year to versioning timestamp (12/31 of year, UTC)
+    warehouse = Path(warehouse)
     version_at = datetime(year, 12, 31, 23, 59, 59).isoformat() + "Z"
-    
-    # Warehouse layers
-    bronze_dir = warehouse / "bronze"
+
+    bronze_path = warehouse / "bronze" / f"{batch_id}.json"
     silver_dir = warehouse / "silver" / batch_id
     staging_dir = warehouse / "staging" / batch_id
     quarantine_dir = warehouse / "quarantine" / batch_id
@@ -53,12 +51,6 @@ def load_simple(spark, source, warehouse, year, batch_id):
     # If data already in Silver: idempotent
     if silver_dir.exists() and list(silver_dir.glob("*.parquet")):
         return "already_exists"
-    
-    # 1. BRONZE: Store raw data as received
-    bronze_path = bronze_dir / f"{batch_id}.json"
-    if not bronze_path.exists():
-        bronze_path.parent.mkdir(parents=True, exist_ok=True)
-        bronze_path.write_bytes(source.read_bytes())
     
     # 2. Read JSONL data from bronze
     raw = spark.read.schema(RAW_SCHEMA).json(str(bronze_path))
@@ -76,20 +68,31 @@ def load_simple(spark, source, warehouse, year, batch_id):
     # 4. STAGING: Processing workspace for transformations
     staging_dir.mkdir(parents=True, exist_ok=True)
     raw.write.mode("overwrite").parquet(str(staging_dir / "data"))
-    
+
     # 5. SILVER: Cleaned, validated and versioned with metadata
     silver_dir.mkdir(parents=True, exist_ok=True)
     enriched = raw.withColumn(
+        "total", F.col("females") + F.col("males")
+    ).withColumn(
         "batch_id", F.lit(batch_id)
     ).withColumn(
         "version_at", F.lit(version_at).cast("timestamp")
     ).withColumn(
         "recorded_at", F.current_timestamp()
-    )
-    
+    ) 
     enriched.write.mode("overwrite").parquet(str(silver_dir))
     
     return "committed"
+
+
+def load_simple(spark, source, warehouse, year, batch_id):
+    """Extract and transfer a batch, retaining the original combined interface."""
+    silver_dir = Path(warehouse) / "silver" / batch_id
+    if silver_dir.exists() and list(silver_dir.glob("*.parquet")):
+        return "already_exists"
+
+    extract(source, warehouse, batch_id)
+    return transfer(spark, warehouse, year, batch_id)
 
 
 def create_gold_demographics(spark, warehouse, batch_id):
